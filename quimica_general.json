@@ -1,0 +1,86 @@
+[
+  {
+    "nivel": 1,
+    "subtema": "Configuración electrónica",
+    "pregunta": "Escribe la configuración electrónica del sodio, Z=11.",
+    "respuesta": "1s² 2s² 2p⁶ 3s¹."
+  },
+  {
+    "nivel": 1,
+    "subtema": "Configuración electrónica",
+    "pregunta": "Escribe la configuración electrónica del oxígeno, Z=8.",
+    "respuesta": "1s² 2s² 2p⁴."
+  },
+  {
+    "nivel": 1,
+    "subtema": "Fuerzas intermoleculares",
+    "pregunta": "¿Cuál es la fuerza intermolecular predominante entre moléculas de H₂O?",
+    "respuesta": "Puentes de hidrógeno."
+  },
+  {
+    "nivel": 1,
+    "subtema": "Balanceo",
+    "pregunta": "Balancea: H₂ + O₂ → H₂O.",
+    "respuesta": "2H₂ + O₂ → 2H₂O."
+  },
+  {
+    "nivel": 2,
+    "subtema": "Configuración electrónica",
+    "pregunta": "Escribe la configuración electrónica del cloro, Z=17.",
+    "respuesta": "1s² 2s² 2p⁶ 3s² 3p⁵."
+  },
+  {
+    "nivel": 2,
+    "subtema": "Fuerzas intermoleculares",
+    "pregunta": "¿Qué interacción predomina entre moléculas de HCl?",
+    "respuesta": "Dipolo-dipolo; también existen fuerzas de dispersión."
+  },
+  {
+    "nivel": 2,
+    "subtema": "Balanceo",
+    "pregunta": "Balancea: Fe + O₂ → Fe₂O₃.",
+    "respuesta": "4Fe + 3O₂ → 2Fe₂O₃."
+  },
+  {
+    "nivel": 2,
+    "subtema": "Polaridad",
+    "pregunta": "¿CO₂ es polar o apolar? Justifica brevemente.",
+    "respuesta": "Apolar: sus enlaces son polares, pero la geometría lineal cancela los dipolos."
+  },
+  {
+    "nivel": 3,
+    "subtema": "Configuración electrónica",
+    "pregunta": "Escribe la configuración abreviada del hierro, Z=26.",
+    "respuesta": "[Ar] 3d⁶ 4s²."
+  },
+  {
+    "nivel": 3,
+    "subtema": "Fuerzas intermoleculares",
+    "pregunta": "Ordena por fuerza predominante: CH₄, HCl, H₂O.",
+    "respuesta": "CH₄: dispersión; HCl: dipolo-dipolo; H₂O: puente de hidrógeno."
+  },
+  {
+    "nivel": 3,
+    "subtema": "Balanceo",
+    "pregunta": "Balancea: C₃H₈ + O₂ → CO₂ + H₂O.",
+    "respuesta": "C₃H₈ + 5O₂ → 3CO₂ + 4H₂O."
+  },
+  {
+    "nivel": 4,
+    "subtema": "Configuración electrónica",
+    "pregunta": "Un átomo neutro tiene configuración [Ne]3s²3p³. Identifica el elemento y sus electrones de valencia.",
+    "respuesta": "Fósforo (P), Z=15; tiene 5 electrones de valencia."
+  },
+  {
+    "nivel": 4,
+    "subtema": "Fuerzas intermoleculares",
+    "pregunta": "Compara CH₃OH y CH₃OCH₃ respecto a puentes de hidrógeno.",
+    "respuesta": "CH₃OH puede formar puentes de hidrógeno entre sus moléculas porque posee O-H. CH₃OCH₃ no tiene H unido al O y no puede donar puentes de hidrógeno entre moléculas de sí mismo."
+  },
+  {
+    "nivel": 4,
+    "subtema": "Balanceo",
+    "pregunta": "Balancea: KMnO₄ + HCl → KCl + MnCl₂ + H₂O + Cl₂.",
+    "respuesta": "2KMnO₄ + 16HCl → 2KCl + 2MnCl₂ + 8H₂O + 5Cl₂."
+  }
+]

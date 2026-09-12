@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generador de Ejercicios</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="hero">
+  <div>
+    <div class="eyebrow">INGENIERÍA • PRÁCTICA</div>
+    <h1>Generador de Ejercicios</h1>
+    <p>Matemáticas, química y programación. Cuatro niveles de dificultad.</p>
+  </div>
+</header>
+
+<main class="app">
+  <nav id="ramos" class="tabs" aria-label="Ramos"></nav>
+
+  <section class="toolbar card">
+    <div class="toolbar-row">
+      <div>
+        <label for="nivel">Dificultad</label>
+        <select id="nivel">
+          <option value="1">Nivel 1 · Fácil</option>
+          <option value="2">Nivel 2 · Medio</option>
+          <option value="3">Nivel 3 · Difícil</option>
+          <option value="4">Nivel 4 · Desafío</option>
+        </select>
+      </div>
+      <div id="subtemaWrap" class="hidden">
+        <label for="subtema">Subtema</label>
+        <select id="subtema"></select>
+      </div>
+      <div class="spacer"></div>
+      <button id="nuevo" class="primary">Generar ejercicio</button>
+    </div>
+  </section>
+
+  <section class="card exercise-card">
+    <div class="exercise-top">
+      <div>
+        <span id="badgeRamo" class="badge"></span>
+        <span id="badgeNivel" class="badge muted"></span>
+      </div>
+      <span id="contador" class="counter">Ejercicios: —</span>
+    </div>
+
+    <div id="exercise" class="exercise">
+      <div class="placeholder">
+        <div class="placeholder-icon">∑</div>
+        <h2>Listo para practicar</h2>
+        <p>Elige el nivel y presiona <b>Generar ejercicio</b>.</p>
+      </div>
+    </div>
+
+    <div id="answer" class="answer hidden"></div>
+
+    <div class="actions">
+      <button id="respuestaBtn" class="secondary" disabled>Mostrar respuesta</button>
+      <button id="otro" class="ghost">Otro ejercicio</button>
+    </div>
+  </section>
+
+  <section class="info-grid">
+    <div class="card mini">
+      <strong>Resultados limpios</strong>
+      <span>Los ejercicios matemáticos priorizan enteros, fracciones y raíces exactas.</span>
+    </div>
+    <div class="card mini">
+      <strong>Banco + generadores</strong>
+      <span>Los ejercicios están en JSON y los matemáticos también pueden generarse al vuelo.</span>
+    </div>
+    <div class="card mini">
+      <strong>Sin respuesta automática</strong>
+      <span>La solución permanece oculta hasta que tú la solicites.</span>
+    </div>
+  </section>
+</main>
+
+<footer>Generador de Ejercicios · versión 1.0</footer>
+<script src="js/generadores.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

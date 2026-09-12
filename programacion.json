@@ -1,0 +1,80 @@
+[
+  {
+    "nivel": 1,
+    "subtema": "Variables",
+    "pregunta": "En Python, ¿qué valor queda en x después de x=7; x=x+3?",
+    "respuesta": "x = 10."
+  },
+  {
+    "nivel": 1,
+    "subtema": "Condicionales",
+    "pregunta": "¿Qué imprime: x=5; print('A' if x>3 else 'B')?",
+    "respuesta": "A."
+  },
+  {
+    "nivel": 1,
+    "subtema": "Ciclos",
+    "pregunta": "¿Qué imprime for i in range(1,4): print(i)?",
+    "respuesta": "1, 2 y 3, cada uno en una línea."
+  },
+  {
+    "nivel": 1,
+    "subtema": "Listas",
+    "pregunta": "Si lista=[4,7,9], ¿qué devuelve lista[1]?",
+    "respuesta": "7."
+  },
+  {
+    "nivel": 2,
+    "subtema": "Funciones",
+    "pregunta": "Escribe una función Python llamada cuadrado(n) que devuelva n².",
+    "respuesta": "def cuadrado(n): return n**2"
+  },
+  {
+    "nivel": 2,
+    "subtema": "Ciclos",
+    "pregunta": "¿Qué imprime sum(range(1,6))?",
+    "respuesta": "15."
+  },
+  {
+    "nivel": 2,
+    "subtema": "Diccionarios",
+    "pregunta": "Si d={'nombre':'Ana','edad':20}, ¿cómo obtienes la edad?",
+    "respuesta": "d['edad']"
+  },
+  {
+    "nivel": 2,
+    "subtema": "Listas",
+    "pregunta": "Dada [2,4,6,8], calcula la suma mediante un ciclo for.",
+    "respuesta": "El resultado es 20."
+  },
+  {
+    "nivel": 3,
+    "subtema": "Archivos",
+    "pregunta": "¿Qué modo de open() usarías para leer un archivo de texto sin modificarlo?",
+    "respuesta": "Modo 'r'."
+  },
+  {
+    "nivel": 3,
+    "subtema": "Excepciones",
+    "pregunta": "Escribe la estructura básica para capturar una división por cero.",
+    "respuesta": "try: ... except ZeroDivisionError: ..."
+  },
+  {
+    "nivel": 3,
+    "subtema": "JSON",
+    "pregunta": "¿Qué módulo estándar de Python permite trabajar con JSON?",
+    "respuesta": "El módulo json; por ejemplo, json.load() y json.dump()."
+  },
+  {
+    "nivel": 4,
+    "subtema": "Integración",
+    "pregunta": "Diseña la estructura de un programa que lea un JSON con mediciones, permita elegir una medición y calcule su promedio.",
+    "respuesta": "Una solución debe separar lectura del archivo, validación, menú/selección y cálculo. Puede usar json.load(), funciones y un ciclo de menú."
+  },
+  {
+    "nivel": 4,
+    "subtema": "Estructuras de datos",
+    "pregunta": "Tienes una lista de diccionarios con productos. ¿Cómo calcularías el valor total de todos los productos usando precio y cantidad?",
+    "respuesta": "Recorrer la lista y acumular producto['precio'] * producto['cantidad'] en una variable total."
+  }
+]
