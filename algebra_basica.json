@@ -1,0 +1,56 @@
+[
+  {
+    "nivel": 1,
+    "subtema": "Simplificación",
+    "pregunta": "Simplifica 7x+3x-4.",
+    "respuesta": "10x-4."
+  },
+  {
+    "nivel": 1,
+    "subtema": "Ecuaciones",
+    "pregunta": "Resuelve 3x+5=20.",
+    "respuesta": "x=5."
+  },
+  {
+    "nivel": 1,
+    "subtema": "Productos notables",
+    "pregunta": "Desarrolla (x+3)².",
+    "respuesta": "x²+6x+9."
+  },
+  {
+    "nivel": 2,
+    "subtema": "Factorización",
+    "pregunta": "Factoriza x²+7x+12.",
+    "respuesta": "(x+3)(x+4)."
+  },
+  {
+    "nivel": 2,
+    "subtema": "Ecuaciones",
+    "pregunta": "Resuelve 2x-3=5x+9.",
+    "respuesta": "x=-4."
+  },
+  {
+    "nivel": 2,
+    "subtema": "Fracciones algebraicas",
+    "pregunta": "Simplifica (x²-9)/(x-3), con x≠3.",
+    "respuesta": "x+3."
+  },
+  {
+    "nivel": 3,
+    "subtema": "Sistemas",
+    "pregunta": "Resuelve x+y=9 y 2x-y=6.",
+    "respuesta": "x=5, y=4."
+  },
+  {
+    "nivel": 3,
+    "subtema": "Cuadráticas",
+    "pregunta": "Resuelve x²-5x+6=0.",
+    "respuesta": "x=2 y x=3."
+  },
+  {
+    "nivel": 4,
+    "subtema": "Inecuaciones",
+    "pregunta": "Resuelve (x-2)(x+3)>0.",
+    "respuesta": "x<-3 o x>2."
+  }
+]
