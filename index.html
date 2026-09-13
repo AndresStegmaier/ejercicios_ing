@@ -375,14 +375,6 @@ mjx-container svg{
 
 
 /* v27: asegurar contraste y tipografía matemática */
-mjx-container[jax="SVG"]{
-  color:#f3f7fb!important;
-}
-mjx-container[jax="SVG"] svg{
-  fill:currentColor!important;
-}
-
-
 /* v28: subtítulo/tema del ejercicio más discreto */
 #exercise h2{
   font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
@@ -634,14 +626,25 @@ pre,code{
   font-family:"Cascadia Code","SFMono-Regular",Consolas,"Liberation Mono",monospace;
 }
 
-/* No establecer font-family sobre mjx-container ni sus hijos.
-   MathJax SVG debe conservar sus propios glifos TeX. */
-mjx-container[jax="SVG"]{
-  color:var(--text)!important;
+
+/* v53 · matemática integrada como texto */
+#exercise mjx-container[jax="CHTML"]{
+  display:inline!important;
+  margin:0 .08em!important;
+  vertical-align:baseline!important;
 }
-mjx-container[jax="SVG"] svg{
-  fill:currentColor!important;
+#exercise mjx-container[jax="CHTML"][display="true"]{
+  display:inline!important;
+  margin:0 .08em!important;
 }
+#exercise .question{
+  line-height:1.75;
+}
+#answer mjx-container[jax="CHTML"],
+.hint-panel mjx-container[jax="CHTML"]{
+  color:inherit;
+}
+/* MathJax conserva su propia familia matemática interna. */
 
 </style>
 
@@ -653,11 +656,11 @@ window.MathJax = {
     displayMath: [['\\[','\\]']],
     processEscapes: true
   },
-  svg: {fontCache: 'global'},
+  chtml: {matchFontHeight: false},
   startup: {typeset: true}
 };
 </script>
-<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 </head>
 <body>
 
@@ -2364,16 +2367,27 @@ function normalizarDelimitadoresMathJax(root=document){
   const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
   const nodes=[];
   while(walker.nextNode()) nodes.push(walker.currentNode);
+
   for(const node of nodes){
     const p=node.parentElement;
     if(!p || p.closest("script,style,pre,code,mjx-container")) continue;
+
     let t=node.nodeValue;
     if(!t) continue;
-    // Banco histórico: algunos textos pueden llegar con dos barras literales.
-    t=t.replace(/\\\\\\\\\\\(/g,"\\\\(")
-       .replace(/\\\\\\\\\\\)/g,"\\\\)")
-       .replace(/\\\\\\\\\\\[/g,"\\\\[")
-       .replace(/\\\\\\\\\\\]/g,"\\\\]");
+
+    // Corrige bancos históricos con barras duplicadas.
+    t=t.replace(/\\\\\\\(/g,"\\(")
+       .replace(/\\\\\\\)/g,"\\)")
+       .replace(/\\\\\\\[/g,"\\[")
+       .replace(/\\\\\\\]/g,"\\]");
+
+    // En los ENUNCIADOS la matemática debe formar parte de la frase:
+    // \[ ... \] -> \( ... \)
+    if(p.closest("#exercise")){
+      t=t.replace(/\\\[/g,"\\(")
+         .replace(/\\\]/g,"\\)");
+    }
+
     node.nodeValue=t;
   }
 }
@@ -5199,7 +5213,7 @@ function crearGuiaImprimible(){
  const rs=sol?`<div class="pagebreak"></div><h2>Solucionario</h2>`+ejercicios.map((e,i)=>`<article><b>${i+1}.</b><div>${e.respuesta}</div></article>`).join(""):"";
  w.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Guía · ${nombre}</title>
  <script>window.MathJax={tex:{inlineMath:[['\\\\(','\\\\)']],displayMath:[['\\\\[','\\\\]']]},svg:{fontCache:'global'}};<\/script>
- <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"><\/script>
+ <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"><\/script>
  <style>*{box-sizing:border-box}body{font-family:Arial;color:#111;padding:28px;max-width:900px;margin:auto}.bar{display:flex;justify-content:flex-end;position:sticky;top:0;background:white;padding:8px 0}.bar button{background:#111827;color:white;border:0;border-radius:8px;padding:10px 16px}header{border-bottom:2px solid #111;margin-bottom:25px;padding-bottom:16px}article{display:grid;grid-template-columns:30px 1fr;gap:6px;margin:20px 0;break-inside:avoid}small{color:#666;text-transform:uppercase;font-size:9px}.espacio{height:85px;border-bottom:1px dotted #bbb}.pagebreak{page-break-before:always}.idea-clave-general,.idea-clave-fisica{font-size:11px;color:#555;border-left:2px solid #aaa;padding-left:8px;margin-top:8px}pre{white-space:pre-wrap;background:#f4f4f4;padding:8px}@media print{.bar{display:none}@page{size:A4;margin:16mm}}</style></head><body>
  <div class="bar"><button onclick="window.print()">Imprimir / Guardar PDF</button></div>
  <header><h1>Guía de ejercicios · ${nombre}</h1><p>${subtxt} · ${nivel==="aplicados"?"Aplicados":"Nivel "+nivel} · ${ejercicios.length} ejercicios</p><p>Nombre: ________________________________ &nbsp;&nbsp; Fecha: ______________</p></header>
