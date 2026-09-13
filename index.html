@@ -490,6 +490,108 @@ mjx-container[jax="SVG"] svg{
 .guide-actions{display:flex;justify-content:flex-end;gap:10px}
 @media(max-width:650px){.guide-grid{grid-template-columns:1fr}.guide-actions{flex-direction:column}.guide-actions button{width:100%}}
 
+
+.sidebar-tools{
+  margin-top:22px;
+  padding-top:18px;
+  border-top:1px solid rgba(148,163,184,.12);
+}
+.sidebar-guide-btn{
+  width:100%;
+  display:flex;
+  align-items:center;
+  gap:11px;
+  text-align:left;
+  padding:12px 13px;
+  border-radius:12px;
+  border:1px solid rgba(139,92,246,.30);
+  background:rgba(139,92,246,.08);
+  color:#e8e4ff;
+  cursor:pointer;
+  transition:.18s ease;
+}
+.sidebar-guide-btn:hover{
+  background:rgba(139,92,246,.15);
+  border-color:rgba(139,92,246,.48);
+  transform:translateY(-1px);
+}
+.sidebar-guide-icon{
+  width:32px;
+  height:32px;
+  display:grid;
+  place-items:center;
+  flex:0 0 auto;
+  border-radius:9px;
+  background:rgba(139,92,246,.14);
+  font-size:18px;
+}
+.sidebar-guide-btn strong{
+  display:block;
+  font-size:13px;
+  line-height:1.2;
+}
+.sidebar-guide-btn small{
+  display:block;
+  margin-top:3px;
+  color:#8fa0b5;
+  font-size:10px;
+  font-weight:500;
+}
+
+
+.hint-panel{
+  margin-top:18px;
+  padding:15px 16px;
+  border:1px solid rgba(59,130,246,.22);
+  background:rgba(59,130,246,.06);
+  border-radius:14px;
+}
+.hint-panel.hidden{display:none}
+.hint-step{
+  padding:10px 0;
+  border-bottom:1px solid rgba(148,163,184,.10);
+}
+.hint-step:last-child{border-bottom:0}
+.hint-kicker{
+  display:block;
+  margin-bottom:5px;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:#8fb8ff;
+}
+.hint-text{
+  color:#c6d2df;
+  font-size:13px;
+  line-height:1.58;
+}
+.hint-btn{
+  border:1px solid rgba(59,130,246,.30);
+  background:rgba(59,130,246,.08);
+  color:#cfe2ff;
+  border-radius:12px;
+  padding:11px 15px;
+  font-weight:700;
+  cursor:pointer;
+}
+.hint-btn:hover:not(:disabled){background:rgba(59,130,246,.15)}
+.hint-btn:disabled{opacity:.42;cursor:not-allowed}
+
+
+.extreme-case{
+  display:inline-block;
+  margin-bottom:6px;
+  padding:4px 8px;
+  border:1px solid rgba(148,163,184,.22);
+  border-radius:999px;
+  color:#cbd5e1;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+}
+
 </style>
 
 
@@ -515,6 +617,18 @@ window.MathJax = {
 
     <div class="sidebar-label">Cursos</div>
     <div id="ramos" class="tabs"></div>
+
+
+    <div class="sidebar-tools">
+      <div class="sidebar-label">Herramientas</div>
+      <button type="button" id="guiaBtn" class="sidebar-guide-btn">
+        <span class="sidebar-guide-icon">▤</span>
+        <span>
+          <strong>Generar guía</strong>
+          <small>Crear formato imprimible</small>
+        </span>
+      </button>
+    </div>
 
     <div class="sidebar-author">
       Autor: Andrés Stegmaier<br>
@@ -550,7 +664,6 @@ window.MathJax = {
       </div>
 
       <button type="button" id="nuevo" class="primary">Generar ejercicio</button>
-      <button type="button" id="guiaBtn" class="guide-btn">Generar guía</button>
     </div>
 
     <div class="meta-row">
@@ -578,9 +691,12 @@ window.MathJax = {
         <img src="periodica.png" alt="Tabla periódica con electronegatividades de Pauling">
       </div>
 
+      <div id="hintPanel" class="hint-panel hidden"></div>
+
       <div id="answer" class="answer hidden"></div>
 
       <div class="actions">
+        <button type="button" id="pistaBtn" class="hint-btn" disabled>Mostrar pista</button>
         <button type="button" id="respuestaBtn" class="secondary" disabled>Mostrar respuesta</button>
         <button type="button" id="otro" class="ghost">Otro ejercicio</button>
       </div>
@@ -608,7 +724,7 @@ window.MathJax = {
           <option value="aplicados">Aplicados</option>
         </select>
       </div>
-      <div class="control"><label for="guiaCantidad">Cantidad</label><input id="guiaCantidad" type="number" min="3" max="50" value="10"></div>
+      <div class="control"><label for="guiaCantidad">Cantidad</label><input id="guiaCantidad" type="number" min="3" max="100" value="10"></div>
     </div>
     <div class="guide-options">
       <label><input id="guiaSoluciones" type="checkbox" checked> Solucionario al final</label>
@@ -622,6 +738,7 @@ window.MathJax = {
   </div>
 </div>
 
+<script src="js/banco100.js"></script>
 <script>
 "use strict";
 
@@ -749,6 +866,7 @@ const RAMOS = {
  general:"General"
 };
 let ramoActual="calculo_diferencial", nivelActual=1, ejercicio=null, ultimoIndice=-1;
+let pistasActuales=[], indicePistaActual=0;
 const $ = id => document.getElementById(id);
 
 function crearTabs(){
@@ -800,6 +918,9 @@ function limpiar(){
  $("exercise").innerHTML='<h2>Listo para practicar</h2><p>Presiona <b>Generar ejercicio</b>.</p>';
  $("badgeRamo").textContent=RAMOS[ramoActual]; actualizarEstiloNivel();
  $("estado").textContent=""; $("estado").className="";
+  pistasActuales=[]; indicePistaActual=0;
+  if($("hintPanel")){$("hintPanel").innerHTML="";$("hintPanel").classList.add("hidden");}
+  if($("pistaBtn")){$("pistaBtn").disabled=true;$("pistaBtn").textContent="Mostrar pista";}
 }
 
 function enriquecerRespuestaGeneral(ej){
@@ -822,6 +943,230 @@ function enriquecerRespuestaGeneral(ej){
   return ej;
 }
 
+
+function limpiarHtmlTexto(s){
+  return String(s||"")
+    .replace(/<pre[\s\S]*?<\/pre>/gi," código ")
+    .replace(/<[^>]*>/g," ")
+    .replace(/\s+/g," ")
+    .trim();
+}
+
+function construirPistas(ej){
+  if(!ej) return [];
+
+  if(Array.isArray(ej.pistas) && ej.pistas.length){
+    return ej.pistas.slice(0,3);
+  }
+
+  const tema=normalizarTexto((ej.subtema||"")+" "+(ej.tema||""));
+  const pregunta=normalizarTexto(limpiarHtmlTexto(ej.pregunta));
+  const ramo=ramoActual;
+  let p1="",p2="",desarrollo="";
+
+  if(ramo==="calculo_diferencial"){
+    if(tema.includes("regla de la cadena") || pregunta.includes("deriva")){
+      p1="Identifica primero la función exterior y la función interior. No derives todo de una sola vez.";
+      p2="Deriva la función exterior dejando intacta la interior y multiplícala por la derivada de la función interior.";
+      desarrollo="Escribe la composición como f(g(x)). Luego usa f'(g(x))·g'(x). Si además hay producto o cociente, combina las reglas.";
+    }else if(tema.includes("implicit")){
+      p1="Deriva ambos lados respecto de x y recuerda que y depende de x.";
+      p2="Cada vez que derives una expresión con y debe aparecer y'. Por ejemplo, d(y²)/dx = 2y·y'.";
+      desarrollo="Agrupa todos los términos con y' en un lado, factoriza y' y finalmente despeja.";
+    }else if(tema.includes("tasa")){
+      p1="Escribe primero una ecuación que relacione las variables del problema.";
+      p2="Deriva toda la ecuación respecto del tiempo antes de sustituir los valores numéricos.";
+      desarrollo="Después de derivar, reemplaza solo los datos correspondientes al instante pedido y despeja la tasa desconocida.";
+    }else if(tema.includes("sustit")){
+      p1="Busca una expresión interna cuya derivada también aparezca en el integrando.";
+      p2="Define u igual a esa expresión y transforma también dx mediante du.";
+      desarrollo="Reescribe completamente la integral en u, integra y finalmente vuelve a la variable original.";
+    }else if(tema.includes("por partes")){
+      p1="Elige u como la parte que se simplifica al derivarla.";
+      p2="Usa ∫u dv = uv − ∫v du.";
+      desarrollo="Calcula du y v por separado, sustituye en la fórmula y simplifica la integral restante.";
+    }else{
+      p1="Identifica qué regla principal corresponde antes de operar.";
+      p2="Separa la expresión en partes simples y deriva o integra cada una con cuidado.";
+      desarrollo="Comprueba signos, exponentes y constantes antes de comparar con el resultado.";
+    }
+  }else if(ramo==="algebra_lineal"){
+    if(tema.includes("inversa")){
+      p1="Comprueba primero que el determinante sea distinto de cero.";
+      p2="Para una matriz 2×2, intercambia los elementos de la diagonal principal y cambia el signo de los otros dos.";
+      desarrollo="Multiplica la matriz adjunta por 1/det(A) y verifica el resultado calculando A·A⁻¹.";
+    }else if(tema.includes("determin")){
+      p1="Identifica el orden de la matriz antes de aplicar la fórmula.";
+      p2="En 2×2 usa ad−bc; en 3×3 puedes usar cofactores o reducción.";
+      desarrollo="Revisa los signos de cada cofactor antes de sumar los términos.";
+    }else if(tema.includes("sistema")){
+      p1="Elige eliminación, sustitución o método matricial.";
+      p2="Busca cancelar una variable combinando ecuaciones.";
+      desarrollo="Resuelve la variable restante y sustituye hacia atrás para recuperar las demás.";
+    }else if(tema.includes("valor propio")){
+      p1="Forma A−λI.";
+      p2="Iguala det(A−λI)=0 y resuelve el polinomio característico.";
+      desarrollo="Para cada λ, resuelve (A−λI)v=0 para obtener los vectores propios.";
+    }else{
+      p1="Identifica primero la operación matricial o vectorial que se pide.";
+      p2="Revisa dimensiones y condiciones antes de calcular.";
+      desarrollo="Haz la operación paso a paso y verifica el resultado cuando sea posible.";
+    }
+  }else if(ramo==="calculo_basico" || ramo==="algebra_basica"){
+    if(tema.includes("dominio")){
+      p1="Busca restricciones: denominadores, raíces pares y logaritmos.";
+      p2="Exige denominadores ≠ 0, radicandos ≥ 0 y argumentos de logaritmos > 0.";
+      desarrollo="Interseca todas las restricciones y expresa el resultado en intervalos.";
+    }else if(tema.includes("inecu")){
+      p1="Lleva todo a un solo lado y encuentra los puntos críticos.";
+      p2="Separa la recta real en intervalos usando ceros del numerador y denominador.";
+      desarrollo="Haz una tabla de signos y recuerda excluir valores que anulen denominadores.";
+    }else if(tema.includes("factor")){
+      p1="Busca factor común antes de intentar métodos más complejos.";
+      p2="Comprueba si hay diferencia de cuadrados, trinomio o agrupación.";
+      desarrollo="Factoriza hasta que ningún factor pueda simplificarse más.";
+    }else{
+      p1="Simplifica la expresión antes de despejar.";
+      p2="Mantén las mismas operaciones en ambos lados de la ecuación.";
+      desarrollo="Al final sustituye tus soluciones en la expresión original para descartar soluciones extrañas.";
+    }
+  }else if(ramo==="calculo_multivariable"){
+    if(tema.includes("gradiente")){
+      p1="Calcula primero todas las derivadas parciales.";
+      p2="Forma ∇f con esas parciales y luego evalúa en el punto pedido.";
+      desarrollo="Si piden derivada direccional, normaliza la dirección y calcula ∇f·u.";
+    }else if(tema.includes("plano tangente")){
+      p1="Necesitas f(a,b), fx(a,b) y fy(a,b).";
+      p2="Usa z−f(a,b)=fx(a,b)(x−a)+fy(a,b)(y−b).";
+      desarrollo="Evalúa con cuidado todas las parciales en el punto antes de sustituir.";
+    }else if(tema.includes("lagrange")){
+      p1="Construye ∇f = λ∇g.";
+      p2="Añade también la ecuación de restricción g(x,y,...)=c.";
+      desarrollo="Resuelve el sistema completo y compara los valores de f en los puntos candidatos.";
+    }else{
+      p1="Identifica qué variables se mantienen constantes en cada derivada.";
+      p2="Separa claramente derivadas, evaluación en punto y región de integración.";
+      desarrollo="Trabaja una variable a la vez y revisa los límites antes de integrar.";
+    }
+  }else if(ramo==="fisica"){
+    if(tema.includes("cinemat")){
+      p1="Lista los datos con sus unidades y decide si el movimiento es uniforme o acelerado.";
+      p2="Elige una ecuación que contenga la incógnita y la menor cantidad posible de variables extra.";
+      desarrollo="Sustituye con unidades SI y revisa el signo según el eje que elegiste.";
+    }else if(tema.includes("dinam") || tema.includes("fuerza")){
+      p1="Dibuja o imagina el diagrama de cuerpo libre.";
+      p2="Descompón fuerzas por ejes y aplica ΣF = ma.";
+      desarrollo="Escribe una ecuación por eje, cuidando signos y fuerzas de roce o tensión.";
+    }else if(tema.includes("energia") || tema.includes("trabajo")){
+      p1="Identifica energía cinética, potencial y trabajo de fuerzas no conservativas.";
+      p2="Plantea conservación de energía o Wnet = ΔK según corresponda.";
+      desarrollo="Mantén todas las energías en joules y despeja la variable solicitada.";
+    }else{
+      p1="Escribe primero la ley física que gobierna el problema.";
+      p2="Convierte todos los datos a unidades SI antes de calcular.";
+      desarrollo="Despeja simbólicamente la incógnita y recién después sustituye valores.";
+    }
+  }else if(ramo==="estadistica"){
+    if(tema.includes("binomial")){
+      p1="Verifica si hay número fijo de ensayos, dos resultados y probabilidad constante.";
+      p2="Usa P(X=k)=C(n,k)p^k(1−p)^(n−k).";
+      desarrollo="Identifica n, k y p antes de sustituir. Si piden esperanza usa np.";
+    }else if(tema.includes("normal")){
+      p1="Estandariza usando z=(x−μ)/σ.";
+      p2="Después de obtener z, interpreta el área correspondiente en la normal estándar.";
+      desarrollo="Cuida si la probabilidad es a la izquierda, derecha o entre dos valores.";
+    }else{
+      p1="Identifica primero qué medida o probabilidad se está pidiendo.";
+      p2="Organiza los datos antes de aplicar la fórmula.";
+      desarrollo="Calcula y luego interpreta el resultado en el contexto del ejercicio.";
+    }
+  }else if(ramo==="quimica_general"){
+    if(tema.includes("balanceo")){
+      p1="Cuenta cuántos átomos de cada elemento hay a ambos lados.";
+      p2="Ajusta coeficientes, nunca subíndices.";
+      desarrollo="Deja H y O para el final cuando la reacción tenga varios elementos.";
+    }else if(tema.includes("electroneg")){
+      p1="Busca la electronegatividad de cada átomo.";
+      p2="Calcula ΔEN como la diferencia absoluta.";
+      desarrollo="Usa ΔEN y la geometría molecular para razonar el tipo de enlace o polaridad.";
+    }else if(tema.includes("polaridad") || tema.includes("geometr")){
+      p1="Determina primero la estructura de Lewis.";
+      p2="Cuenta regiones electrónicas alrededor del átomo central.";
+      desarrollo="Aplica VSEPR y luego analiza si los dipolos se cancelan.";
+    }else{
+      p1="Identifica qué concepto químico gobierna el ejercicio.";
+      p2="Relaciona electrones de valencia, estructura y conservación según corresponda.";
+      desarrollo="Comprueba carga total y número de átomos antes de cerrar la respuesta.";
+    }
+  }else if(ramo==="programacion"){
+    if(tema.includes("bucle")){
+      p1="Sigue el valor de las variables iteración por iteración.";
+      p2="Revisa exactamente qué valores produce range().";
+      desarrollo="Puedes construir una pequeña tabla con i y el acumulador después de cada vuelta.";
+    }else if(tema.includes("lista") || tema.includes("comprension")){
+      p1="Lee la comprensión en orden: expresión, for y luego condición.";
+      p2="Enumera primero los valores que pasan el filtro.";
+      desarrollo="Aplica la transformación solo a los elementos que cumplan la condición.";
+    }else if(tema.includes("json") || tema.includes("archivo")){
+      p1="Identifica si debes leer, escribir o transformar los datos.";
+      p2="Usa with open(...) para manejar correctamente el archivo.";
+      desarrollo="Para JSON usa json.load/json.dump según leas o escribas.";
+    }else{
+      p1="Rastrea tipos y valores de las variables antes de ejecutar mentalmente.";
+      p2="Divide el código en bloques pequeños y evalúalos por separado.";
+      desarrollo="Comprueba casos límite y posibles excepciones antes de decidir la salida.";
+    }
+  }else{
+    p1="Identifica el concepto principal que está evaluando el ejercicio.";
+    p2="Separa los datos conocidos de la incógnita.";
+    desarrollo="Plantea el procedimiento simbólicamente antes de sustituir números.";
+  }
+
+  return [
+    {titulo:"Pista 1",texto:p1},
+    {titulo:"Pista 2",texto:p2},
+    {titulo:"Desarrollo",texto:desarrollo}
+  ];
+}
+
+function prepararPistas(ej){
+  pistasActuales=construirPistas(ej);
+  indicePistaActual=0;
+  const panel=$("hintPanel");
+  if(panel){panel.innerHTML="";panel.classList.add("hidden");}
+  const btn=$("pistaBtn");
+  if(btn){
+    btn.disabled=!ej||!pistasActuales.length;
+    btn.textContent="Mostrar pista";
+  }
+}
+
+function mostrarSiguientePista(){
+  if(!pistasActuales.length || indicePistaActual>=pistasActuales.length) return;
+  const panel=$("hintPanel");
+  const item=pistasActuales[indicePistaActual];
+  const bloque=document.createElement("div");
+  bloque.className="hint-step";
+  bloque.innerHTML='<span class="hint-kicker">'+item.titulo+'</span><div class="hint-text">'+item.texto+'</div>';
+  panel.appendChild(bloque);
+  panel.classList.remove("hidden");
+  indicePistaActual++;
+
+  const btn=$("pistaBtn");
+  if(indicePistaActual>=pistasActuales.length){
+    btn.disabled=true;
+    btn.textContent="Pistas completas";
+  }else if(indicePistaActual===1){
+    btn.textContent="Mostrar pista 2";
+  }else{
+    btn.textContent="Mostrar desarrollo";
+  }
+
+  if(RAMOS_MATHJAX.has(ramoActual) || ramoActual==="general"){
+    setTimeout(renderizarMatematica,0);
+  }
+}
+
 function generar(){
 
   if(ramoActual==="fisica"){
@@ -835,6 +1180,7 @@ function generar(){
       }
 
       ejercicio=enriquecerRespuestaGeneral(ejercicio);
+      prepararPistas(ejercicio);
 
    $("exercise").className="";
       $("exercise").innerHTML='<div class="question"><div class="topic">'+(ejercicio.subtema||ejercicio.tema||"Ejercicio")+'</div>'+ejercicio.pregunta+'</div>';
@@ -878,6 +1224,7 @@ function generar(){
      ejercicio=arr[indice];
    }
 
+   prepararPistas(ejercicio);
    $("exercise").className="";
    $("exercise").innerHTML='<div class="question"><div class="topic">'+(ejercicio.subtema||ejercicio.tema||"Ejercicio")+'</div>'+ejercicio.pregunta+'</div>';
    $("answer").innerHTML='<div class="answer-title">Respuesta</div>'+ejercicio.respuesta;
@@ -4550,6 +4897,14 @@ function generarVariacionMasiva(){
 
 function generarDinamicoFiltrado(){
  const st=subtemaActivo();
+
+ // Banco garantizado de 100 variantes por curso × nivel × subtema.
+ if(window.Banco100 && st && st!=="todos" && ramoActual!=="general"){
+   const z=Banco100.generar(ramoActual,nivelActual,st);
+   if(z) return z;
+ }
+
+ // Si está en "Todos", conserva la variedad transversal previa.
  if(ramoActual!=="general" && nivelActual!=="aplicados" && Math.random()<0.72){
    const z=generarVariacionMasiva();
    if(z) return z;
@@ -4567,7 +4922,6 @@ function generarDinamicoFiltrado(){
  }
  return null;
 }
-
 function generarDinamico(){
   let z=null;
   if(ramoActual!=="general" && nivelActual!=="aplicados" && Math.random()<0.62){
@@ -4651,13 +5005,21 @@ function abrirGuia(){
 }
 function cerrarGuia(){$("guiaModal").classList.add("hidden");$("guiaModal").setAttribute("aria-hidden","true");}
 
-function generarUnoGuia(curso,nivel,subtema){
+function generarUnoGuia(curso,nivel,subtema,indiceBanco=null){
  const oldR=ramoActual,oldN=nivelActual,oldS=subtemaActivo();
  try{
    ramoActual=curso;nivelActual=nivel==="aplicados"?"aplicados":Number(nivel);
    actualizarSubtemas();
    if($("subtema")&&[...$("subtema").options].some(o=>o.value===subtema)) $("subtema").value=subtema;
-   let z=generarDinamicoFiltrado();
+
+   let z=null;
+   if(window.Banco100 && subtema!=="todos"){
+     z = indiceBanco===null
+       ? Banco100.generar(curso,nivelActual,subtema)
+       : Banco100.generarIndice(curso,nivelActual,subtema,indiceBanco);
+   }
+
+   if(!z) z=generarDinamicoFiltrado();
    if(!z){const arr=candidatos();if(arr.length) z=choice(arr);}
    return z?enriquecerRespuestaGeneral(z):null;
  }finally{
@@ -4665,16 +5027,15 @@ function generarUnoGuia(curso,nivel,subtema){
    if($("subtema")&&[...$("subtema").options].some(o=>o.value===oldS)) $("subtema").value=oldS;
  }
 }
-
 function crearGuiaImprimible(){
  const curso=$("guiaCurso").value,sub=$("guiaSubtema").value,nivel=$("guiaNivel").value;
- let cant=Math.max(3,Math.min(50,parseInt($("guiaCantidad").value,10)||10));
+ let cant=Math.max(3,Math.min(100,parseInt($("guiaCantidad").value,10)||10));
  const sol=$("guiaSoluciones").checked,esp=$("guiaEspacio").checked;
  const w=window.open("","_blank");
  if(!w){$("guiaEstado").textContent="Permite ventanas emergentes para crear la guía.";return;}
  const ejercicios=[],firmas=new Set();
  for(let i=0;i<cant*45&&ejercicios.length<cant;i++){
-   const z=generarUnoGuia(curso,nivel,sub);if(!z)continue;
+   const z=generarUnoGuia(curso,nivel,sub, sub!=="todos" ? i%100 : null);if(!z)continue;
    const f=String(z.pregunta).replace(/<[^>]*>/g,"").trim();
    if(firmas.has(f))continue;firmas.add(f);ejercicios.push(z);
  }
@@ -4723,6 +5084,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   $("nuevo").addEventListener("click",generar);
   $("otro").addEventListener("click",generar);
   $("respuestaBtn").addEventListener("click",alternarRespuesta);
+  $("pistaBtn").addEventListener("click",mostrarSiguientePista);
   $("nivel").addEventListener("change",e=>{nivelActual=e.target.value==="aplicados"?"aplicados":Number(e.target.value); actualizarEstiloNivel(); limpiar(); actualizarContador();});
   $("subtema").addEventListener("change",()=>{limpiar(); actualizarContador(); $("estado").textContent="";});
  }catch(err){
