@@ -927,7 +927,7 @@ function crearTabs(){
  Object.entries(RAMOS).forEach(([id,nombre])=>{
    const b=document.createElement("button");
    b.type="button"; b.className="tab"+(id===ramoActual?" active":""); b.textContent=nombre;
-   b.addEventListener("click",()=>{ramoActual=id; crearTabs(); actualizarSubtemas(); actualizarNivelAplicado(); limpiar(); actualizarContador(); actualizarEstiloNivel(); inicializarGuia();});
+   b.addEventListener("click",()=>{ramoActual=id; crearTabs(); actualizarSubtemas(); actualizarNivelAplicado(); limpiar(); actualizarContador(); actualizarEstiloNivel(); inicializarGuia(); activarAutoMathJax();});
    $("ramos").appendChild(b);
  });
 }
@@ -1216,7 +1216,7 @@ function mostrarSiguientePista(){
   }
 
   if(RAMOS_MATHJAX.has(ramoActual) || ramoActual==="general"){
-    setTimeout(renderizarMatematica,0);
+    renderizarMatematica();
   }
 }
 
@@ -1257,7 +1257,7 @@ function generar(){
       contador++;
       actualizarContador();
       if(RAMOS_MATHJAX.has(ramoActual) || ramoActual==="quimica_general"){
-        setTimeout(renderizarMatematica,0);
+        renderizarMatematica();
       }
       return;
     }catch(err){
@@ -1286,7 +1286,7 @@ function generar(){
       $("answer").innerHTML='<div class="answer-title">Respuesta</div>'+ejercicio.respuesta;
 
       if(RAMOS_MATHJAX.has(ramoActual) || ramoActual==="general" || nivelActual==="aplicados"){
-        setTimeout(renderizarMatematica,0);
+        renderizarMatematica();
       }
 
       $("answer").classList.add("hidden");
@@ -1327,7 +1327,7 @@ function generar(){
    $("exercise").className="";
    $("exercise").innerHTML='<div class="question"><div class="topic">'+(ejercicio.subtema||ejercicio.tema||"Ejercicio")+'</div>'+ejercicio.pregunta+'</div>';
    $("answer").innerHTML='<div class="answer-title">Respuesta</div>'+ejercicio.respuesta;
-   if(RAMOS_MATHJAX.has(ramoActual) || ramoActual==="general" || nivelActual==="aplicados") setTimeout(renderizarMatematica,0);
+   if(RAMOS_MATHJAX.has(ramoActual) || ramoActual==="general" || nivelActual==="aplicados") renderizarMatematica();
    $("answer").classList.add("hidden");
    $("respuestaBtn").disabled=false;
    $("respuestaBtn").textContent="Mostrar respuesta";
@@ -2378,18 +2378,45 @@ function normalizarDelimitadoresMathJax(root=document){
   }
 }
 
-function renderizarMatematica(){
+async function renderizarMatematica(){
   normalizarDelimitadoresMathJax(document);
-  if(!window.MathJax || !MathJax.typesetPromise) return;
-  const targets=[
-    document.getElementById("exercise"),
-    document.getElementById("answer")
-  ].filter(Boolean);
+
+  // MathJax puede existir antes de haber terminado su inicialización.
+  // Esperamos explícitamente su startup.promise.
+  if(!window.MathJax){
+    setTimeout(renderizarMatematica,100);
+    return;
+  }
+
   try{
-    if(MathJax.typesetClear) MathJax.typesetClear(targets);
-    MathJax.typesetPromise(targets).catch(err=>console.error("MathJax:",err));
+    if(MathJax.startup && MathJax.startup.promise){
+      await MathJax.startup.promise;
+    }
+
+    if(!MathJax.typesetPromise){
+      setTimeout(renderizarMatematica,100);
+      return;
+    }
+
+    const targets=[
+      document.getElementById("exercise"),
+      document.getElementById("answer"),
+      document.getElementById("hintPanel")
+    ].filter(Boolean);
+
+    if(MathJax.typesetClear){
+      MathJax.typesetClear(targets);
+    }
+
+    await MathJax.typesetPromise(targets);
   }catch(err){
     console.error("MathJax:",err);
+    // Un segundo intento cubre cargas lentas desde CDN.
+    setTimeout(()=>{
+      if(window.MathJax && MathJax.typesetPromise){
+        MathJax.typesetPromise().catch(()=>{});
+      }
+    },250);
   }
 }
 
@@ -5199,6 +5226,27 @@ function actualizarEstiloNivel(){
   $("badgeNivel").textContent=nivelActual==="aplicados"?"Aplicados":"Nivel "+nivelActual;
 }
 
+
+function activarAutoMathJax(){
+  const ids=["exercise","answer","hintPanel"];
+  for(const id of ids){
+    const el=document.getElementById(id);
+    if(!el) continue;
+
+    let timer=null;
+    const observer=new MutationObserver(()=>{
+      clearTimeout(timer);
+      timer=setTimeout(()=>renderizarMatematica(),30);
+    });
+
+    observer.observe(el,{
+      childList:true,
+      subtree:true,
+      characterData:true
+    });
+  }
+}
+
 document.addEventListener("DOMContentLoaded",()=>{
  try{
   crearTabs(); actualizarSubtemas(); actualizarNivelAplicado(); limpiar(); actualizarContador(); actualizarEstiloNivel();
@@ -5222,12 +5270,12 @@ document.addEventListener("DOMContentLoaded",()=>{
 
 
 
+
+
+
 <script>
 window.addEventListener("load",()=>{
-  normalizarDelimitadoresMathJax(document);
-  if(window.MathJax && MathJax.typesetPromise){
-    renderizarMatematica();
-  }
+  renderizarMatematica();
 });
 </script>
 
