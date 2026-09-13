@@ -617,10 +617,30 @@ button,select,input,textarea{
 pre,code{
   font-family:"Cascadia Code","SFMono-Regular",Consolas,"Liberation Mono",monospace;
 }
-/* MathJax conserva su propia tipografía matemática */
-mjx-container,
-mjx-container *{
-  font-family:initial!important;
+
+/* v49 · tipografía estable
+   La interfaz usa su propia pila; MathJax NO recibe font-family. */
+html,body,
+button,select,input,textarea{
+  font-family:"Inter","Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif!important;
+}
+#exercise,
+#answer,
+.hint-panel,
+.guide-dialog{
+  font-family:"Inter","Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+pre,code{
+  font-family:"Cascadia Code","SFMono-Regular",Consolas,"Liberation Mono",monospace;
+}
+
+/* No establecer font-family sobre mjx-container ni sus hijos.
+   MathJax SVG debe conservar sus propios glifos TeX. */
+mjx-container[jax="SVG"]{
+  color:var(--text)!important;
+}
+mjx-container[jax="SVG"] svg{
+  fill:currentColor!important;
 }
 
 </style>
@@ -5168,5 +5188,14 @@ document.addEventListener("DOMContentLoaded",()=>{
  }
 });
 </script>
+
+<script>
+window.addEventListener("load",()=>{
+  if(window.MathJax && MathJax.typesetPromise){
+    MathJax.typesetPromise().catch(()=>{});
+  }
+});
+</script>
+
 </body>
 </html>
