@@ -650,9 +650,11 @@ mjx-container[jax="SVG"] svg{
 window.MathJax = {
   tex: {
     inlineMath: [['\\(','\\)']],
-    displayMath: [['\\[','\\]']]
+    displayMath: [['\\[','\\]']],
+    processEscapes: true
   },
-  svg: {fontCache: 'global'}
+  svg: {fontCache: 'global'},
+  startup: {typeset: true}
 };
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
@@ -2357,9 +2359,37 @@ function generarMatematicaTex(){
   return grupo[nivelActual]();
 }
 
+
+function normalizarDelimitadoresMathJax(root=document){
+  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+  const nodes=[];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+  for(const node of nodes){
+    const p=node.parentElement;
+    if(!p || p.closest("script,style,pre,code,mjx-container")) continue;
+    let t=node.nodeValue;
+    if(!t) continue;
+    // Banco histórico: algunos textos pueden llegar con dos barras literales.
+    t=t.replace(/\\\\\\\\\\\(/g,"\\\\(")
+       .replace(/\\\\\\\\\\\)/g,"\\\\)")
+       .replace(/\\\\\\\\\\\[/g,"\\\\[")
+       .replace(/\\\\\\\\\\\]/g,"\\\\]");
+    node.nodeValue=t;
+  }
+}
+
 function renderizarMatematica(){
-  if(window.MathJax && MathJax.typesetPromise){
-    MathJax.typesetPromise([$("exercise"),$("answer")]).catch(console.error);
+  normalizarDelimitadoresMathJax(document);
+  if(!window.MathJax || !MathJax.typesetPromise) return;
+  const targets=[
+    document.getElementById("exercise"),
+    document.getElementById("answer")
+  ].filter(Boolean);
+  try{
+    if(MathJax.typesetClear) MathJax.typesetClear(targets);
+    MathJax.typesetPromise(targets).catch(err=>console.error("MathJax:",err));
+  }catch(err){
+    console.error("MathJax:",err);
   }
 }
 
@@ -5189,10 +5219,14 @@ document.addEventListener("DOMContentLoaded",()=>{
 });
 </script>
 
+
+
+
 <script>
 window.addEventListener("load",()=>{
+  normalizarDelimitadoresMathJax(document);
   if(window.MathJax && MathJax.typesetPromise){
-    MathJax.typesetPromise().catch(()=>{});
+    renderizarMatematica();
   }
 });
 </script>
