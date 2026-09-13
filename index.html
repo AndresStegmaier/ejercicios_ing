@@ -1216,7 +1216,7 @@ function mostrarSiguientePista(){
   }
 
   if(RAMOS_MATHJAX.has(ramoActual) || ramoActual==="general"){
-    renderizarMatematica();
+    programarRenderMatematico();
   }
 }
 
@@ -1257,7 +1257,7 @@ function generar(){
       contador++;
       actualizarContador();
       if(RAMOS_MATHJAX.has(ramoActual) || ramoActual==="quimica_general"){
-        renderizarMatematica();
+        programarRenderMatematico();
       }
       return;
     }catch(err){
@@ -1286,7 +1286,7 @@ function generar(){
       $("answer").innerHTML='<div class="answer-title">Respuesta</div>'+ejercicio.respuesta;
 
       if(RAMOS_MATHJAX.has(ramoActual) || ramoActual==="general" || nivelActual==="aplicados"){
-        renderizarMatematica();
+        programarRenderMatematico();
       }
 
       $("answer").classList.add("hidden");
@@ -1327,7 +1327,7 @@ function generar(){
    $("exercise").className="";
    $("exercise").innerHTML='<div class="question"><div class="topic">'+(ejercicio.subtema||ejercicio.tema||"Ejercicio")+'</div>'+ejercicio.pregunta+'</div>';
    $("answer").innerHTML='<div class="answer-title">Respuesta</div>'+ejercicio.respuesta;
-   if(RAMOS_MATHJAX.has(ramoActual) || ramoActual==="general" || nivelActual==="aplicados") renderizarMatematica();
+   if(RAMOS_MATHJAX.has(ramoActual) || ramoActual==="general" || nivelActual==="aplicados") programarRenderMatematico();
    $("answer").classList.add("hidden");
    $("respuestaBtn").disabled=false;
    $("respuestaBtn").textContent="Mostrar respuesta";
@@ -1348,7 +1348,7 @@ function alternarRespuesta(){
  if(!ejercicio)return;
  const oculto=$("answer").classList.toggle("hidden");
  $("respuestaBtn").textContent=oculto?"Mostrar respuesta":"Ocultar respuesta";
- if(!oculto && (RAMOS_MATHJAX.has(ramoActual) || ramoActual==="general" || nivelActual==="aplicados")) renderizarMatematica();
+ if(!oculto && (RAMOS_MATHJAX.has(ramoActual) || ramoActual==="general" || nivelActual==="aplicados")) programarRenderMatematico();
 }
 
 // ===== GENERADORES DINÁMICOS =====
@@ -2378,13 +2378,15 @@ function normalizarDelimitadoresMathJax(root=document){
   }
 }
 
-async function renderizarMatematica(){
-  normalizarDelimitadoresMathJax(document);
+let renderMathTimer=null;
+let renderMathToken=0;
 
-  // MathJax puede existir antes de haber terminado su inicialización.
-  // Esperamos explícitamente su startup.promise.
-  if(!window.MathJax){
-    setTimeout(renderizarMatematica,100);
+async function renderizarMatematica(){
+  const token=++renderMathToken;
+
+  if(!window.MathJax || !MathJax.typesetPromise){
+    clearTimeout(renderMathTimer);
+    renderMathTimer=setTimeout(renderizarMatematica,120);
     return;
   }
 
@@ -2393,31 +2395,35 @@ async function renderizarMatematica(){
       await MathJax.startup.promise;
     }
 
-    if(!MathJax.typesetPromise){
-      setTimeout(renderizarMatematica,100);
-      return;
-    }
+    // Espera a que el navegador haya insertado y pintado el nuevo HTML.
+    await new Promise(resolve=>requestAnimationFrame(
+      ()=>requestAnimationFrame(resolve)
+    ));
 
-    const targets=[
-      document.getElementById("exercise"),
-      document.getElementById("answer"),
-      document.getElementById("hintPanel")
-    ].filter(Boolean);
+    if(token!==renderMathToken) return;
 
-    if(MathJax.typesetClear){
-      MathJax.typesetClear(targets);
-    }
+    normalizarDelimitadoresMathJax(document);
 
+    const exercise=document.getElementById("exercise");
+    const answer=document.getElementById("answer");
+    const hint=document.getElementById("hintPanel");
+    const targets=[exercise,answer,hint].filter(Boolean);
+
+    // Para contenido dinámico recién insertado, typesetPromise es suficiente.
+    // No hacemos typesetClear DESPUÉS de cambiar el DOM.
     await MathJax.typesetPromise(targets);
   }catch(err){
     console.error("MathJax:",err);
-    // Un segundo intento cubre cargas lentas desde CDN.
-    setTimeout(()=>{
-      if(window.MathJax && MathJax.typesetPromise){
-        MathJax.typesetPromise().catch(()=>{});
-      }
-    },250);
+    clearTimeout(renderMathTimer);
+    renderMathTimer=setTimeout(renderizarMatematica,180);
   }
+}
+
+function programarRenderMatematico(){
+  requestAnimationFrame(()=>renderizarMatematica());
+  setTimeout(()=>renderizarMatematica(),120);
+  setTimeout(()=>renderizarMatematica(),350);
+  setTimeout(()=>renderizarMatematica(),800);
 }
 
 const GENERADORES_DINAMICOS = {
@@ -5234,9 +5240,14 @@ function activarAutoMathJax(){
     if(!el) continue;
 
     let timer=null;
-    const observer=new MutationObserver(()=>{
+    const observer=new MutationObserver(mutations=>{
+      const soloMathJax=mutations.every(m=>{
+        const target=m.target.nodeType===1?m.target:m.target.parentElement;
+        return target && target.closest && target.closest("mjx-container");
+      });
+      if(soloMathJax) return;
       clearTimeout(timer);
-      timer=setTimeout(()=>renderizarMatematica(),30);
+      timer=setTimeout(()=>programarRenderMatematico(),30);
     });
 
     observer.observe(el,{
@@ -5250,6 +5261,8 @@ function activarAutoMathJax(){
 document.addEventListener("DOMContentLoaded",()=>{
  try{
   crearTabs(); actualizarSubtemas(); actualizarNivelAplicado(); limpiar(); actualizarContador(); actualizarEstiloNivel();
+  activarAutoMathJax();
+  inicializarGuia();
   $("nuevo").addEventListener("click",generar);
   $("otro").addEventListener("click",generar);
   $("respuestaBtn").addEventListener("click",alternarRespuesta);
@@ -5275,7 +5288,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 
 <script>
 window.addEventListener("load",()=>{
-  renderizarMatematica();
+  programarRenderMatematico();
 });
 </script>
 
